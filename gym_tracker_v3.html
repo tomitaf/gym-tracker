@@ -201,8 +201,18 @@
       <div class="unit">divisões</div>
     </div>
     <div class="stat-card">
-      <div class="label">Histórico</div>
-      <div class="value" id="stat-sessions">0</div>
+      <div class="label">Este mês</div>
+      <div class="value" id="stat-month">0</div>
+      <div class="unit">sessões</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Este ano</div>
+      <div class="value" id="stat-year">0</div>
+      <div class="unit">sessões</div>
+    </div>
+    <div class="stat-card">
+      <div class="label" id="stat-prev-year-label">Ano anterior</div>
+      <div class="value" id="stat-prev-year">0</div>
       <div class="unit">sessões</div>
     </div>
   </div>
@@ -249,7 +259,24 @@
     <div class="form-group">
       <label class="form-label">Grupos musculares</label>
       <div class="add-row">
-        <input type="text" id="new-muscle" placeholder="Ex: Quadríceps, Glúteos...">
+        <select id="new-muscle" class="form-input" style="flex:1;cursor:pointer">
+          <option value="">Selecione um grupo muscular</option>
+          <option>Abdome</option>
+          <option>Abdutor</option>
+          <option>Adutor</option>
+          <option>Antebraço</option>
+          <option>Bíceps</option>
+          <option>Costas</option>
+          <option>Glúteos</option>
+          <option>Lombar</option>
+          <option>Ombros</option>
+          <option>Panturrilha</option>
+          <option>Peito</option>
+          <option>Posterior de quadríceps</option>
+          <option>Quadríceps</option>
+          <option>Trapézio</option>
+          <option>Tríceps</option>
+        </select>
         <button class="ibtn" onclick="addMuscleGroup()"><i class="ti ti-plus" aria-hidden="true"></i> Adicionar</button>
       </div>
       <div id="muscle-tags" class="tag-list" style="margin-top:12px"></div>
@@ -372,8 +399,21 @@ function showScreen(id) {
 }
 
 function updateHome() {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
   document.getElementById('stat-plans').textContent = state.treinos.length;
-  document.getElementById('stat-sessions').textContent = state.historico.length;
+  document.getElementById('stat-month').textContent = state.historico.filter(h => {
+    const d = new Date(h.data);
+    return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+  }).length;
+  document.getElementById('stat-year').textContent = state.historico.filter(h =>
+    new Date(h.data).getFullYear() === thisYear
+  ).length;
+  document.getElementById('stat-prev-year-label').textContent = String(thisYear - 1);
+  document.getElementById('stat-prev-year').textContent = state.historico.filter(h =>
+    new Date(h.data).getFullYear() === thisYear - 1
+  ).length;
 }
 
 function irParaGerenciar() {
@@ -468,12 +508,10 @@ function addMuscleGroup() {
   const inp = document.getElementById('new-muscle');
   const val = inp.value.trim();
   if (!val) return;
-  val.split(',').map(m => m.trim()).filter(m => m).forEach(m => {
-    if (!state.currentMuscles.includes(m)) {
-      state.currentMuscles.push(m);
-      state.currentExercises[m] = [];
-    }
-  });
+  if (!state.currentMuscles.includes(val)) {
+    state.currentMuscles.push(val);
+    state.currentExercises[val] = [];
+  }
   inp.value = '';
   renderMuscleTags();
   renderExerciseBuilder();
