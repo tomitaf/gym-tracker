@@ -1,0 +1,19 @@
+{
+  "name": "Gym Tracker",
+  "short_name": "Gym Tracker",
+  "description": "Gerencie seus treinos de musculação",
+  "start_url": "./gym_tracker_v3.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#e8ff47",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
