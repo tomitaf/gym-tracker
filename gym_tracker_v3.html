@@ -84,6 +84,17 @@
   .plan-list-item .plan-info .plan-muscles { font-size:12px; color:var(--text2); margin-top:2px; }
   .icon-btn { background:none; border:none; color:var(--text3); cursor:pointer; font-size:20px; padding:4px; display:flex; transition:color 0.15s; }
   .icon-btn:hover { color:var(--danger); }
+  .plan-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:8px; overflow:hidden; }
+  .plan-card .plan-list-item { background:transparent; border:none; border-radius:0; margin-bottom:0; cursor:pointer; }
+  .plan-chevron { font-size:18px; color:var(--text3); transition:transform 0.2s; flex-shrink:0; }
+  .plan-expand-body { display:none; padding:12px 14px; background:var(--bg3); border-top:1px solid var(--border); }
+  .plan-expand-body.open { display:block; }
+  .expand-muscle { margin-bottom:10px; }
+  .expand-muscle:last-child { margin-bottom:0; }
+  .expand-muscle-name { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+  .expand-ex { font-size:13px; color:var(--text); margin-bottom:3px; display:flex; align-items:baseline; gap:6px; }
+  .expand-ex-name { font-weight:600; }
+  .expand-series-label { font-size:11px; color:var(--text3); }
   .series-chip { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; align-items:center; gap:2px; min-width:46px; }
   .series-chip:hover { border-color:var(--accent); color:var(--accent); }
   .series-chip.done { background:rgba(232,255,71,0.08); border-color:var(--accent); color:var(--accent); }
@@ -180,7 +191,7 @@
 <div id="screen-home" class="screen active">
   <div class="home-hero">
     <div class="greeting">Bem-vindo de volta</div>
-    <h2>Hora de<br>Malhar 💪</h2>
+    <h2>Gym Tracker</h2>
     <div class="sub">Vamos lá, registre seu treino</div>
   </div>
   <div class="home-stats">
@@ -381,17 +392,46 @@ function renderGerenciarList() {
     el.innerHTML = '<div class="empty-state"><i class="ti ti-list"></i><p>Nenhuma divisão cadastrada ainda</p></div>';
     return;
   }
-  el.innerHTML = state.treinos.map((t, i) => `
-    <div class="plan-list-item">
-      <div class="plan-info">
-        <div class="plan-name">${t.nome}</div>
-        <div class="plan-muscles">${t.musculos.join(' · ')}</div>
-      </div>
-      <button class="icon-btn" aria-label="Apagar treino ${t.nome}" onclick="pedirApagarTreino(${i})">
-        <i class="ti ti-trash" aria-hidden="true"></i>
-      </button>
-    </div>
-  `).join('');
+  el.innerHTML = state.treinos.map((t, i) => {
+    const expandContent = t.musculos.map(m => {
+      const exs = t.exercicios[m] || [];
+      if (exs.length === 0) return '';
+      return '<div class="expand-muscle">' +
+        '<div class="expand-muscle-name">' + m + '</div>' +
+        exs.map(ex =>
+          '<div class="expand-ex">' +
+            '<span class="expand-ex-name">' + (ex.nome || '—') + '</span>' +
+            '<span class="expand-series-label">' + ex.series.join(', ') + ' reps</span>' +
+          '</div>'
+        ).join('') +
+      '</div>';
+    }).join('');
+    return '<div class="plan-card">' +
+      '<div class="plan-list-item" onclick="togglePlanExpand(' + i + ')">' +
+        '<div class="plan-info">' +
+          '<div class="plan-name">' + t.nome + '</div>' +
+          '<div class="plan-muscles">' + t.musculos.join(' · ') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:4px">' +
+          '<button class="icon-btn" aria-label="Apagar treino ' + t.nome + '" onclick="event.stopPropagation();pedirApagarTreino(' + i + ')">' +
+            '<i class="ti ti-trash" aria-hidden="true"></i>' +
+          '</button>' +
+          '<i class="ti ti-chevron-down plan-chevron" id="chevron-' + i + '" aria-hidden="true"></i>' +
+        '</div>' +
+      '</div>' +
+      '<div class="plan-expand-body" id="expand-' + i + '">' +
+        (expandContent || '<div style="font-size:12px;color:var(--text3);text-align:center;padding:4px 0">Nenhum exercício cadastrado</div>') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function togglePlanExpand(i) {
+  const body = document.getElementById('expand-' + i);
+  const chevron = document.getElementById('chevron-' + i);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 function pedirApagarTreino(i) {
