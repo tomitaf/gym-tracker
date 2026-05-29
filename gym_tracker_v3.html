@@ -971,8 +971,12 @@ function traduzirErroFirebase(code) {
     'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
     'auth/invalid-credential': 'E-mail ou senha inválidos.',
     'auth/network-request-failed': 'Sem conexão. Verifique sua internet.',
+    'auth/unauthorized-domain': 'Domínio não autorizado. Adicione tomitaf.github.io nos domínios autorizados do Firebase.',
+    'auth/operation-not-allowed': 'Autenticação por e-mail não está ativada no Firebase.',
+    'auth/internal-error': 'Erro interno do Firebase. Verifique as configurações do projeto.',
+    'permission-denied': 'Sem permissão no banco de dados. Verifique as regras do Firestore.',
   };
-  return erros[code] || 'Erro inesperado. Tente novamente.';
+  return erros[code] || 'Erro inesperado [' + code + ']. Tente novamente.';
 }
 
 firebase.auth().onAuthStateChanged(async (user) => {
