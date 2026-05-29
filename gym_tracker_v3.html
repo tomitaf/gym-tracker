@@ -29,7 +29,8 @@
   .screen { display: none; padding: 0 0 80px; min-height: 100vh; }
   .screen.active { display: block; }
   .header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
-  .header-back { background: none; border: none; color: var(--text); cursor: pointer; font-size: 20px; padding: 4px; display: flex; }
+  .header-back { background: var(--inner-btn-bg); color: var(--inner-btn-text); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; padding: 6px 10px; display: flex; align-items: center; transition: background 0.15s, color 0.15s; }
+  .header-back:hover { background: var(--inner-btn-hover-bg); color: var(--inner-btn-hover-text); }
   .header h1 { font-size: 17px; font-weight: 700; flex: 1; }
   .header-badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; }
   .home-hero { background: var(--accent); padding: 36px 20px 28px; position: relative; overflow: hidden; }
@@ -114,8 +115,8 @@
   .calendar-wrap { padding:20px; }
   .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .cal-header h3 { font-size:17px; font-weight:800; color:#fff; }
-  .cal-nav { background:none; border:1px solid var(--border); border-radius:var(--radius-sm); width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text); font-size:18px; transition:all 0.15s; }
-  .cal-nav:hover { border-color:var(--inner-btn-hover-bg); color:var(--inner-btn-hover-bg); }
+  .cal-nav { background:var(--inner-btn-bg); color:var(--inner-btn-text); border:none; border-radius:var(--radius-sm); width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:background 0.15s, color 0.15s; }
+  .cal-nav:hover { background:var(--inner-btn-hover-bg); color:var(--inner-btn-hover-text); }
   .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
   .cal-day-name { text-align:center; font-size:11px; font-weight:700; color:var(--text3); padding:6px 0; }
   .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:13px; cursor:pointer; position:relative; border:1px solid transparent; transition:background 0.1s; }
@@ -195,25 +196,30 @@
     <div class="sub">Vamos lá, registre seu treino</div>
   </div>
   <div class="home-stats">
-    <div class="stat-card">
+    <div class="stat-card" style="grid-column:1/-1">
       <div class="label">Treinos criados</div>
       <div class="value" id="stat-plans">0</div>
       <div class="unit">divisões</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Este mês</div>
-      <div class="value" id="stat-month">0</div>
-      <div class="unit">sessões</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Este ano</div>
-      <div class="value" id="stat-year">0</div>
-      <div class="unit">sessões</div>
-    </div>
-    <div class="stat-card">
-      <div class="label" id="stat-prev-year-label">Ano anterior</div>
-      <div class="value" id="stat-prev-year">0</div>
-      <div class="unit">sessões</div>
+  </div>
+  <div style="margin:0 20px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 14px 10px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Treinos realizados</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="stat-card">
+        <div class="label">Este ano</div>
+        <div class="value" id="stat-year">0</div>
+        <div class="unit">sessões</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Mês passado</div>
+        <div class="value" id="stat-month">0</div>
+        <div class="unit">sessões</div>
+      </div>
+      <div class="stat-card">
+        <div class="label" id="stat-prev-year-label">Ano passado</div>
+        <div class="value" id="stat-prev-year">0</div>
+        <div class="unit">sessões</div>
+      </div>
     </div>
   </div>
   <div class="menu-section">
@@ -401,15 +407,16 @@ function showScreen(id) {
 function updateHome() {
   const now = new Date();
   const thisYear = now.getFullYear();
-  const thisMonth = now.getMonth();
+  const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+  const lastMonthYear = now.getMonth() === 0 ? thisYear - 1 : thisYear;
   document.getElementById('stat-plans').textContent = state.treinos.length;
-  document.getElementById('stat-month').textContent = state.historico.filter(h => {
-    const d = new Date(h.data);
-    return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
-  }).length;
   document.getElementById('stat-year').textContent = state.historico.filter(h =>
     new Date(h.data).getFullYear() === thisYear
   ).length;
+  document.getElementById('stat-month').textContent = state.historico.filter(h => {
+    const d = new Date(h.data);
+    return d.getFullYear() === lastMonthYear && d.getMonth() === lastMonth;
+  }).length;
   document.getElementById('stat-prev-year-label').textContent = String(thisYear - 1);
   document.getElementById('stat-prev-year').textContent = state.historico.filter(h =>
     new Date(h.data).getFullYear() === thisYear - 1
