@@ -957,8 +957,17 @@ async function fazerCadastro() {
   }
 }
 
-async function fazerLogout() {
-  await firebase.auth().signOut();
+function fazerLogout() {
+  showPopup({
+    icon: 'warn',
+    title: 'Deseja sair da sua conta?',
+    desc: '',
+    labelNo: 'Não',
+    labelYes: 'Sim',
+    onYes: async () => {
+      await firebase.auth().signOut();
+    }
+  });
 }
 
 function traduzirErroFirebase(code) {
@@ -981,12 +990,17 @@ function traduzirErroFirebase(code) {
 
 firebase.auth().onAuthStateChanged(async (user) => {
   if (user) {
-    const snap = await db.collection('userdata').doc(user.uid).get();
-    if (snap.exists) {
-      const data = snap.data();
-      state.treinos = data.treinos || [];
-      state.historico = data.historico || [];
-    } else {
+    try {
+      const snap = await db.collection('userdata').doc(user.uid).get();
+      if (snap.exists) {
+        const data = snap.data();
+        state.treinos = data.treinos || [];
+        state.historico = data.historico || [];
+      } else {
+        state.treinos = [];
+        state.historico = [];
+      }
+    } catch (e) {
       state.treinos = [];
       state.historico = [];
     }
