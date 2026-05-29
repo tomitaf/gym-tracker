@@ -1,8 +1,8 @@
-const CACHE = 'gym-tracker-v4';
+const CACHE = 'gym-tracker-v5';
 const ASSETS = [
   './gym_tracker_v3.html',
   './manifest.json',
-  './icon.svg',
+  './icone-app.jpg',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css'
 ];
 
