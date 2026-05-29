@@ -468,7 +468,7 @@ function renderGerenciarList() {
         '</div>' +
         '<div style="display:flex;align-items:center;gap:4px">' +
           '<button class="btn-trash" aria-label="Apagar treino ' + t.nome + '" onclick="event.stopPropagation();pedirApagarTreino(' + i + ')">' +
-            '<img src="btn_lixeira_trnsp.png" alt="Apagar">' +
+            '<img src="btn_lixeira_fnd_preto.jpg" alt="Apagar">' +
           '</button>' +
           '<i class="ti ti-chevron-down plan-chevron" id="chevron-' + i + '" aria-hidden="true"></i>' +
         '</div>' +
@@ -775,7 +775,7 @@ function showDayDetail(day) {
         '<div class="wd-title"><i class="ti ti-barbell" aria-hidden="true"></i> ' + s.treinoNome + '</div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
           '<div class="wd-time"><i class="ti ti-clock" aria-hidden="true"></i> ' + time + '</div>' +
-          '<button class="btn-trash" onclick="pedirDeletarSessao(' + s.id + ',' + day + ')" aria-label="Deletar registro"><img src="btn_lixeira_trnsp.png" alt="Excluir"></button>' +
+          '<button class="btn-trash" onclick="pedirDeletarSessao(' + s.id + ',' + day + ')" aria-label="Deletar registro"><img src="btn_lixeira_fnd_preto.jpg" alt="Excluir"></button>' +
         '</div>' +
       '</div>' +
       s.musculos.map(m =>

@@ -3,7 +3,7 @@ const ASSETS = [
   './gym_tracker_v3.html',
   './manifest.json',
   './icone-app.jpg',
-  './btn_lixeira_trnsp.png',
+  './btn_lixeira_fnd_preto.jpg',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css'
 ];
 
