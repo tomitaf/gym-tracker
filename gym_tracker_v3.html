@@ -29,8 +29,10 @@
   .screen { display: none; padding: 0 0 80px; min-height: 100vh; }
   .screen.active { display: block; }
   .header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
-  .header-back { background: var(--inner-btn-bg); color: var(--inner-btn-text); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; padding: 6px 10px; display: flex; align-items: center; transition: background 0.15s, color 0.15s; }
-  .header-back:hover { background: var(--inner-btn-hover-bg); color: var(--inner-btn-hover-text); }
+  .header-back { background: #e8e8e8; color: #111; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; padding: 6px 10px; display: flex; align-items: center; transition: background 0.15s, color 0.15s; }
+  .header-back i { color: #111; }
+  .header-back:hover { background: #4a9eff; color: #fff; }
+  .header-back:hover i { color: #fff; }
   .header h1 { font-size: 17px; font-weight: 700; flex: 1; }
   .header-badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; }
   .home-hero { background: var(--accent); padding: 36px 20px 28px; position: relative; overflow: hidden; }
@@ -115,8 +117,10 @@
   .calendar-wrap { padding:20px; }
   .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .cal-header h3 { font-size:17px; font-weight:800; color:#fff; }
-  .cal-nav { background:var(--inner-btn-bg); color:var(--inner-btn-text); border:none; border-radius:var(--radius-sm); width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:background 0.15s, color 0.15s; }
-  .cal-nav:hover { background:var(--inner-btn-hover-bg); color:var(--inner-btn-hover-text); }
+  .cal-nav { background:#e8e8e8; color:#111; border:none; border-radius:var(--radius-sm); width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:background 0.15s, color 0.15s; }
+  .cal-nav i { color:#111; }
+  .cal-nav:hover { background:#4a9eff; color:#fff; }
+  .cal-nav:hover i { color:#fff; }
   .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
   .cal-day-name { text-align:center; font-size:11px; font-weight:700; color:var(--text3); padding:6px 0; }
   .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:13px; cursor:pointer; position:relative; border:1px solid transparent; transition:background 0.1s; }
@@ -766,7 +770,10 @@ function showDayDetail(day) {
     return '<div class="workout-detail">' +
       '<div class="wd-header">' +
         '<div class="wd-title"><i class="ti ti-barbell" aria-hidden="true"></i> ' + s.treinoNome + '</div>' +
-        '<div class="wd-time"><i class="ti ti-clock" aria-hidden="true"></i> ' + time + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div class="wd-time"><i class="ti ti-clock" aria-hidden="true"></i> ' + time + '</div>' +
+          '<button class="icon-btn" onclick="pedirDeletarSessao(' + s.id + ',' + day + ')" aria-label="Deletar registro"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
+        '</div>' +
       '</div>' +
       s.musculos.map(m =>
         '<div class="wd-muscle">' +
@@ -786,6 +793,26 @@ function showDayDetail(day) {
       ).join('') +
     '</div>';
   }).join('');
+}
+
+function pedirDeletarSessao(id, day) {
+  showPopup({
+    icon: 'warn',
+    title: 'Deseja deletar esse registro?',
+    desc: '',
+    labelNo: 'Não',
+    labelYes: 'Sim',
+    onYes: () => {
+      const idx = state.historico.findIndex(h => h.id === id);
+      if (idx >= 0) {
+        state.historico.splice(idx, 1);
+        save();
+        updateHome();
+        renderCalendar();
+        showDayDetail(day);
+      }
+    }
+  });
 }
 
 updateHome();

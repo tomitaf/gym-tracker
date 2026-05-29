@@ -1,4 +1,4 @@
-const CACHE = 'gym-tracker-v1';
+const CACHE = 'gym-tracker-v4';
 const ASSETS = [
   './gym_tracker_v3.html',
   './manifest.json',
