@@ -12,6 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Gym Tracker">
 <link rel="apple-touch-icon" href="icone-app.jpg">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -175,12 +178,78 @@
   .select-option .opt-name { font-size:15px; font-weight:700; }
   .select-option .opt-desc { font-size:12px; color:var(--text2); margin-top:3px; }
   .select-modal-cancel { width:100%; padding:14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:none; color:var(--text2); font-size:14px; cursor:pointer; margin-top:8px; }
+  .auth-screen { display:none; min-height:100vh; background:var(--bg); flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .auth-screen.active { display:flex; }
+  .auth-card { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:32px 24px; width:100%; max-width:360px; }
+  .auth-logo { text-align:center; margin-bottom:28px; }
+  .auth-logo .logo-title { font-size:32px; font-weight:900; color:var(--accent); letter-spacing:-1px; }
+  .auth-logo .logo-sub { font-size:13px; color:var(--text2); margin-top:4px; }
+  .auth-section-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:4px; }
+  .auth-subtitle { font-size:13px; color:var(--text2); margin-bottom:20px; }
+  .auth-error { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; color:var(--danger); margin-bottom:16px; display:none; }
+  .auth-error.show { display:block; }
+  .auth-link { text-align:center; margin-top:16px; font-size:13px; color:var(--text2); }
+  .auth-link button { background:none; border:none; color:var(--accent); font-weight:700; cursor:pointer; font-size:13px; text-decoration:underline; }
 </style>
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
 <div id="overlay" class="overlay"></div>
+
+<!-- LOGIN -->
+<div id="auth-login" class="auth-screen active">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-title">Gym Tracker</div>
+      <div class="logo-sub">Gerencie seus treinos</div>
+    </div>
+    <div class="auth-section-title">Entrar</div>
+    <div class="auth-subtitle">Acesse sua conta</div>
+    <div id="login-error" class="auth-error"></div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="login-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="ibtn full" onclick="fazerLogin()" style="margin-top:8px">Entrar</button>
+    <div class="auth-link">Não tem conta? <button onclick="showCadastro()">Cadastre-se</button></div>
+  </div>
+</div>
+
+<!-- CADASTRO -->
+<div id="auth-cadastro" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-title">Gym Tracker</div>
+      <div class="logo-sub">Crie sua conta</div>
+    </div>
+    <div class="auth-section-title">Cadastro</div>
+    <div class="auth-subtitle">Preencha seus dados</div>
+    <div id="cadastro-error" class="auth-error"></div>
+    <div class="form-group">
+      <label class="form-label">Primeiro Nome</label>
+      <input type="text" class="form-input" id="cadastro-nome" placeholder="Seu primeiro nome">
+    </div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="cadastro-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="cadastro-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirmar Senha</label>
+      <input type="password" class="form-input" id="cadastro-confirma" placeholder="Repita a senha" autocomplete="new-password">
+    </div>
+    <button class="ibtn full" onclick="fazerCadastro()" style="margin-top:8px">Criar conta</button>
+    <div class="auth-link">Já tem conta? <button onclick="showLogin()">Entrar</button></div>
+  </div>
+</div>
 
 <!-- UNIVERSAL POPUP -->
 <div id="popup" class="popup-wrap hidden">
@@ -196,11 +265,16 @@
 </div>
 
 <!-- HOME -->
-<div id="screen-home" class="screen active">
+<div id="screen-home" class="screen">
   <div class="home-hero">
-    <div class="greeting">Bem-vindo de volta</div>
-    <h2>Gym Tracker</h2>
-    <div class="sub">Vamos lá, registre seu treino</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="greeting" id="greeting-text">Bem-vindo de volta</div>
+        <h2>Gym Tracker</h2>
+        <div class="sub">Vamos lá, registre seu treino</div>
+      </div>
+      <button onclick="fazerLogout()" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:6px 12px;color:#000;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px;white-space:nowrap">Sair</button>
+    </div>
   </div>
   <div class="home-stats">
     <div class="stat-card" style="grid-column:1/-1">
@@ -369,8 +443,8 @@
 
 <script>
 let state = {
-  treinos: JSON.parse(localStorage.getItem('treinos') || '[]'),
-  historico: JSON.parse(localStorage.getItem('historico') || '[]'),
+  treinos: [],
+  historico: [],
   currentMuscles: [],
   currentExercises: {},
   activeTreino: null,
@@ -379,8 +453,12 @@ let state = {
 };
 
 function save() {
-  localStorage.setItem('treinos', JSON.stringify(state.treinos));
-  localStorage.setItem('historico', JSON.stringify(state.historico));
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  db.collection('userdata').doc(user.uid).set({
+    treinos: state.treinos,
+    historico: state.historico
+  });
 }
 
 function showToast(msg, isError=false) {
@@ -404,7 +482,7 @@ function showPopup({ icon='warn', title, desc='', labelNo='Não', labelYes='Sim'
 function closePopup() { document.getElementById('popup').classList.add('hidden'); }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen, .auth-screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
   window.scrollTo(0, 0);
   if (id === 'home') updateHome();
@@ -818,7 +896,106 @@ function pedirDeletarSessao(id, day) {
   });
 }
 
-updateHome();
+// ─── FIREBASE CONFIG ──────────────────────────────────────────────────────────
+// 1. Acesse https://console.firebase.google.com e crie um projeto
+// 2. No projeto: Authentication → Ativar provedor "E-mail/senha"
+// 3. No projeto: Firestore Database → Criar banco de dados (modo produção)
+// 4. Em Visão geral do projeto → Adicionar app Web → copie o firebaseConfig abaixo
+// ──────────────────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO_ID",
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function showLogin() {
+  document.querySelectorAll('.screen, .auth-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('auth-login').classList.add('active');
+}
+
+function showCadastro() {
+  document.querySelectorAll('.screen, .auth-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('auth-cadastro').classList.add('active');
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+  if (!email || !senha) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.classList.add('show'); return; }
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, senha);
+  } catch (e) {
+    errEl.textContent = traduzirErroFirebase(e.code);
+    errEl.classList.add('show');
+  }
+}
+
+async function fazerCadastro() {
+  const nome = document.getElementById('cadastro-nome').value.trim();
+  const email = document.getElementById('cadastro-email').value.trim();
+  const senha = document.getElementById('cadastro-senha').value;
+  const confirma = document.getElementById('cadastro-confirma').value;
+  const errEl = document.getElementById('cadastro-error');
+  errEl.classList.remove('show');
+  if (!nome || !email || !senha || !confirma) { errEl.textContent = 'Preencha todos os campos.'; errEl.classList.add('show'); return; }
+  if (senha !== confirma) { errEl.textContent = 'As senhas não coincidem.'; errEl.classList.add('show'); return; }
+  if (senha.length < 6) { errEl.textContent = 'A senha deve ter pelo menos 6 caracteres.'; errEl.classList.add('show'); return; }
+  try {
+    const cred = await firebase.auth().createUserWithEmailAndPassword(email, senha);
+    await cred.user.updateProfile({ displayName: nome });
+    await db.collection('userdata').doc(cred.user.uid).set({ treinos: [], historico: [] });
+  } catch (e) {
+    errEl.textContent = traduzirErroFirebase(e.code);
+    errEl.classList.add('show');
+  }
+}
+
+async function fazerLogout() {
+  await firebase.auth().signOut();
+}
+
+function traduzirErroFirebase(code) {
+  const erros = {
+    'auth/user-not-found': 'Usuário não encontrado.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
+    'auth/invalid-email': 'E-mail inválido.',
+    'auth/weak-password': 'Senha muito fraca. Use no mínimo 6 caracteres.',
+    'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
+    'auth/invalid-credential': 'E-mail ou senha inválidos.',
+    'auth/network-request-failed': 'Sem conexão. Verifique sua internet.',
+  };
+  return erros[code] || 'Erro inesperado. Tente novamente.';
+}
+
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    const snap = await db.collection('userdata').doc(user.uid).get();
+    if (snap.exists) {
+      const data = snap.data();
+      state.treinos = data.treinos || [];
+      state.historico = data.historico || [];
+    } else {
+      state.treinos = [];
+      state.historico = [];
+    }
+    const greetEl = document.getElementById('greeting-text');
+    if (greetEl && user.displayName) greetEl.textContent = 'Olá, ' + user.displayName + '!';
+    updateHome();
+    showScreen('home');
+  } else {
+    state.treinos = [];
+    state.historico = [];
+    showLogin();
+  }
+});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
