@@ -957,12 +957,19 @@ async function fazerCadastro() {
   }
 }
 
-async function fazerLogout() {
-  try {
-    await firebase.auth().signOut();
-  } catch(e) {
-    showToast('Erro ao sair. Tente novamente.', true);
-  }
+function fazerLogout() {
+  showPopup({
+    icon: 'warn',
+    title: 'Tem certeza que deseja sair?',
+    desc: '',
+    labelNo: 'Não',
+    labelYes: 'Sim',
+    onYes: () => {
+      firebase.auth().signOut().catch(() => {
+        showToast('Erro ao sair. Tente novamente.', true);
+      });
+    }
+  });
 }
 
 function traduzirErroFirebase(code) {
